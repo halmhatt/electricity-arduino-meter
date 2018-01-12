@@ -33,6 +33,7 @@ def show_plot(datetime_list, watts_list):
     """Show a plot of the data."""
     # Configure dates on X-axis
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+
     plt.plot(datetime_list, watts_list)
     plt.ylabel('Watts')
     plt.xlabel('Local time')
