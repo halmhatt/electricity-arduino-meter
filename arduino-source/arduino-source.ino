@@ -12,6 +12,12 @@ int EDGE_DETECTION_DIFF = 100;
 bool led_is_on = false;
 int lastValue = 0;
 
+String DEBUG_MESSAGE = "DEBUG";
+String POSITIVE_EDGE_MESSAGE = "POSITIVE_EDGE";
+String NEGATIVE_EDGE_MESSAGE = "NEGATIVE_EDGE";
+String MESSAGE_SEPARATOR = "::";
+String MESSAGE_VALUE_SEPARATOR = ", ";
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
@@ -38,20 +44,25 @@ void loop() {
 //    Serial.println(diff, DEC);
 //  }
 
+  // Print a measurement, for debug
+  String debug_message = String(DEBUG_MESSAGE + MESSAGE_SEPARATOR);
+  debug_message = String(debug_message + "SensorValue: " + String(sensorValue, DEC));
+  // Serial.println(debug_message);
+
   if (led_is_on && sensorValue < LED_IS_OFF_VALUE) {
     led_is_on = false;
-    Serial.print("milliseconds: ");
-    Serial.print(millis(), DEC);
-    Serial.print(",Led is OFF");
-    Serial.print(",sensorValue: ");
-    Serial.print(sensorValue, DEC); 
+    String message = String(NEGATIVE_EDGE_MESSAGE + MESSAGE_SEPARATOR);
+    message = String(message + "Milliseconds: " + String(millis(), DEC));
+    message = String(message + MESSAGE_VALUE_SEPARATOR + "Description: LED is OFF");
+    message = String(message + MESSAGE_VALUE_SEPARATOR + "SensorValue: " + String(sensorValue, DEC));
+    Serial.println(message);
   } else if (!led_is_on && sensorValue > LED_IS_ON_VALUE) {
     led_is_on = true;
-    Serial.print("milliseconds: ");
-    Serial.print(millis(), DEC);
-    Serial.print(",Led is ON");
-    Serial.print(",sensorValue: ");
-    Serial.print(sensorValue, DEC);
+    String message = String(POSITIVE_EDGE_MESSAGE + MESSAGE_SEPARATOR);
+    message = String(message + "Milliseconds: " + String(millis(), DEC));
+    message = String(message + MESSAGE_VALUE_SEPARATOR + "Description: LED is ON");
+    message = String(message + MESSAGE_VALUE_SEPARATOR + "SensorValue: " + String(sensorValue, DEC));
+    Serial.println(message);
   }
 
 //  if (led_is_on && sensorValue < LED_IS_OFF_VALUE) {
