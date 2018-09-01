@@ -4,7 +4,7 @@ import traceback
 from datetime import datetime
 from electricitydatawriter import ElectricityDataWriter
 
-DATA_STRUCTURE_BASEPATH = '/media/electricity'
+DATA_STRUCTURE_BASEPATH = os.getenv('ELECTRICITY_MOUNTPOINT', '/media/electricity')
 POSITIVE_EDGE = 'POSITIVE_EDGE'
 
 
@@ -55,7 +55,6 @@ def read_from_serial(ser, data_writer):
 
 try:
 	ser = serial.Serial('/dev/ttyUSB0')
-	ser.open()
 
 	# Skip first message, if any in the buffer
 	ser.flush()
