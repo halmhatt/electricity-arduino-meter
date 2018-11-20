@@ -2,16 +2,10 @@ import serial
 import os
 import traceback
 from datetime import datetime
-import mysql.connector as mariadb
 from electricitydatawriter import ElectricityDataWriter
 
 DATA_STRUCTURE_BASEPATH = os.getenv('ELECTRICITY_MOUNTPOINT', '/media/electricity')
 POSITIVE_EDGE = 'POSITIVE_EDGE'
-
-DB_USER='electricity'
-DB_PASSWORD='Abcdefg88'
-DB_HOST_IP = '192.168.1.84'
-DB_NAME = 'electricity'
 
 
 def parse_message(message: str):
@@ -64,28 +58,15 @@ def read_from_serial(ser, data_writer):
 
         message = ser.readline()
 
-def connect_db():
-    mariadb_connection = mariadb.connect(host=DB_HOST_IP,
-                                         user=DB_USER,
-                                         password=DB_PASSWORD,
-                                         database=DB_NAME)
-    return mariadb_connection
-
 try:
     ser = serial.Serial('/dev/ttyUSB0')
-
-    # Setup database
-    db_connection = connect_db()
 
     # Skip first message, if any in the buffer
     ser.flush()
 
-    data_writer = ElectricityDataWriter(DATA_STRUCTURE_BASEPATH,
-                                        database_connection=db_connection)
+    data_writer = ElectricityDataWriter(DATA_STRUCTURE_BASEPATH)
 
     read_from_serial(ser, data_writer)
-
-    db_connection.close()
 except Exception as e:
     print('Error: {}'.format(e))
     print(traceback.format_exc())
