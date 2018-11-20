@@ -37,6 +37,11 @@ def read_from_serial(ser, data_writer):
 	message = ser.readline()
 	while message:
 		print('Debug: {}'.format(message))
+		if not message.startswith(b'NEGATIVE_EDGE') and not message.startswith(b'POSITIVE_EDGE'):
+			print('The message is broken, wait for next one')
+			# Skip this message
+			message = ser.readline()
+			continue
 		message_type, info = parse_message(message)
 		timestamp = info['Milliseconds']
 
@@ -63,6 +68,8 @@ try:
 
 	read_from_serial(ser, data_writer)
 except Exception as e:
+	print('Error: {}'.format(e))
+	print(traceback.format_exc())
 	with open('error.log', 'w') as f:
 		f.write('Error: {}'.format(e))
 		f.write(traceback.format_exc())

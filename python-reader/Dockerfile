@@ -6,7 +6,6 @@ RUN apt-get update && apt-get install -y nfs-common
 
 ENV ELECTRICITY_MOUNTPOINT /media/electricity
 
-# RUN mkdir /media/electricity
 RUN echo "192.168.1.83:/mnt/NAS_JACOB/electricity /media/electricity nfs nolock" >> /etc/fstab && mkdir /media/electricity
 
-CMD ["bash", "start.sh"]
+CMD ["/bin/bash", "-v", "start.sh"]

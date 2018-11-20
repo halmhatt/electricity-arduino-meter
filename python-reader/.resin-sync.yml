@@ -1,7 +1,7 @@
 local_resinos:
   app-name: electricity-reader
   build-triggers:
-    - Dockerfile: 32d07f4107fcebdfea13632453d535034061c069e92ac4a279232533955f45b1
+    - Dockerfile: 018f07aab499b0de8dd1537d19fb5118d8c81787bd1f7856f996f584aa802908
     - requirements.txt: 42405b07edada34141090b277ea2aeb0cdcb34bd36471b370d7105a98a737c5f
   environment:
     - 'NFS_DATA_LOCATION=192.168.1.83:/mnt/NAS_JACOB/electricity'
@@ -9,3 +9,4 @@ destination: /usr/src/app
 ignore:
   - .git
   - node_modules/
+  - __pycache__/
