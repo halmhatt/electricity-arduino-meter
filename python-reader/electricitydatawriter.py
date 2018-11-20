@@ -6,14 +6,15 @@ import sys
 
 DATA_STRUCTURE_BASEPATH = os.path.join(os.path.dirname(__file__), 'datastructure')
 CSV_FILENAME = 'watts-%Y-%m-%d-c.csv'
-
+DB_TABLE_NAME = 'measurements'
 
 class ElectricityDataWriter:
 	# Number of rows to cache before writing to file
 	BUFFER_SIZE = 5
 
-	def __init__(self, data_structure_basepath):
+	def __init__(self, data_structure_basepath, database_connection=None):
 		self.data_structure_basepath = data_structure_basepath
+		self.database_connection = database_connection
 		self._file = None
 		self._writer = None
 		self._row_buffer = []
@@ -60,6 +61,17 @@ class ElectricityDataWriter:
 			'watts': format(data['watts'], '.2f')
 		}
 
+	def _store_in_database(self, _datetime, watts):
+		try:
+			cursor = self.database_connection.cursor()
+			cursor.execute("""
+				INSERT INTO `{table_name}` (measured_at, watts)
+				VALUES (%s, %s);
+			""".format(table_name=DB_TABLE_NAME), (_datetime, watts))
+			self.database_connection.commit()
+		except Exception as e:
+			print('Error in database: {}'.format(e))
+
 	def write(self, _datetime, watts):
 
 		# Register data
@@ -67,6 +79,9 @@ class ElectricityDataWriter:
 			'datetime': _datetime,
 			'watts': watts
 		})
+
+		# Upload to database
+		self._store_in_database(_datetime, watts)
 
 		# Write to buffer
 		if len(self._row_buffer) >= self.BUFFER_SIZE:
