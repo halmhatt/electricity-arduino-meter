@@ -1,19 +1,18 @@
 import csv
-from datetime import datetime
 import os
-import sys
-
-import mysql.connector as mariadb
+import mysql.connector.pooling
 
 
 DATA_STRUCTURE_BASEPATH = os.path.join(os.path.dirname(__file__), 'datastructure')
 CSV_FILENAME = 'watts-%Y-%m-%d-c.csv'
 
 DB_TABLE_NAME = 'measurements'
-DB_USER='electricity'
-DB_PASSWORD='Abcdefg88'
-DB_HOST_IP = '192.168.1.84'
-DB_NAME = 'electricity'
+DB_CONFIG = {
+    'database': 'electricity',
+    'user': 'electricity',
+    'password': 'Abcdefg88',
+    'host': '192.168.1.84'
+}
 
 
 class ElectricityDataWriter:
@@ -22,7 +21,7 @@ class ElectricityDataWriter:
 
     def __init__(self, data_structure_basepath):
         self.data_structure_basepath = data_structure_basepath
-        self.database_connection = self._get_database_connection()
+        self.db_connection_pool = self._create_db_connection_pool()
         self._file = None
         self._writer = None
         self._row_buffer = []
@@ -69,34 +68,24 @@ class ElectricityDataWriter:
             'watts': format(data['watts'], '.2f')
         }
 
-    def _get_database_connection(self):
-        # Number of times the database has been connected
-        try:
-            self._num_times_db_connected += 1
-        except AttributeError:
-            self._num_times_db_connected = 0
-
-        return mariadb.connect(host=DB_HOST_IP,
-                               user=DB_USER,
-                               password=DB_PASSWORD,
-                               database=DB_NAME)
+    def _create_db_connection_pool(self):
+        return mysql.connector.pooling.MySQLConnectionPool(pool_name='mypool',
+                                                           pool_size=2,
+                                                           **DB_CONFIG)
 
     def _store_in_database(self, _datetime, watts):
         try:
-            cursor = self.database_connection.cursor()
+            cnx = self.db_connection_pool.get_connection()
+            cursor = cnx.cursor()
             cursor.execute("""
                 INSERT INTO `{table_name}` (measured_at, watts)
                 VALUES (%s, %s);
             """.format(table_name=DB_TABLE_NAME), (_datetime, watts))
-            self.database_connection.commit()
+            cnx.commit()
+            cursor.close()
+            cnx.close()
         except Exception as e:
             print('Error in database: {}, {}'.format(e, type(e)))
-
-            # Try to connect again
-            if self._num_times_db_connected < 10:
-                self.database_connection = self._get_database_connection()
-                print("DB was reconnected, this was the {} time".format(self._num_times_db_connected))
-
 
     def write(self, _datetime, watts):
 
